@@ -1,0 +1,58 @@
+apiVersion: v1  # api 文档版本
+kind: Pod       # 资源对象类型，也可以配置为 Deployment、Statefulet 等类型的对象
+metadata:       # Pod 对应相关元数据，用于描述 Pod 的数据
+  name: nginx-po  # Pod 的名称
+  labels:           # 定义 Pod 标签
+    type: app       # 自定义 label 标签，名字为 type，值为 app
+    test: 1.0.0     # 自定义 label 标签，描述 Pod 版本号
+  namespace: 'default'  # 命名空间配置
+spec:               # 期望 Pod 按照这下面的描述进行创建
+  containers:       # 对于 Pod 中容器的描述
+  - name: nginx             # 容器名称
+    image: nginx:1.17.9      # 容器的镜像
+    imagePullPolicy: IfNotPresent  # 镜像拉取策略，指定如果有本地的就用本地>的镜像，否则拉取远程镜像
+    startupProbe:           # 应用启动探针配置
+      # httpGet:              # 探测方式，基于 http 请求探测
+      #   path: /index.html     # http 请求路径
+      # tcpSocket:            # TCP 探测，无需 url，只检测TCP是否成功连接
+      #  port: 80            # http 请求端口
+      exec:
+        command:
+        - sh
+        - -c
+        - "sleep 3;echo 'success'> /inited" 
+      failureThreshold: 5   # 失败阈值，达到这个值认为启动失败
+      periodSeconds: 10     # 间隔检测时间
+      successThreshold: 1   # 多少次成功才算启动成功
+      timeoutSeconds: 5     # 请求的超时时间
+    livenessProbe:          # 应用存活探针配置
+      httpGet:              # 探测方式，基于 http 请求探测
+        path: /started.html     # http 请求路径
+      # tcpSocket:           # TCP 探测，无需 url，只检测TCP是否成功连接
+        port: 80            # http 请求端口
+      failureThreshold: 5   # 失败阈值，达到这个值认为启动失败
+      periodSeconds: 10     # 间隔检测时间
+      successThreshold: 1   # 多少次成功才算启动成功
+      timeoutSeconds: 5     # 请求的超时时间  
+    command:        # 制定容器启动时执行的命令
+    - nginx
+    - -g
+    - 'daemon off;' # 最终命令：nginx -g 'daemon off;'
+    workingDir: /usr/share/nginx/html # 定义容器启动后的工作目录，即进入容器>后默认所在的目录
+    ports:              # 描述端口信息
+    - name: http        # 端口名称
+      containerPort: 80 # 描述容器内部暴露什么端口
+      protocol: TCP     # 描述该端口是基于哪种协议通信的
+    env:                          # 环境变量
+    - name: JVM_OPTS              # 环境变量名称
+      value: '-Xms128m -Xmx128m'  # 环境变量的值
+    resources:        
+      requests:       # 最少使用多少资源
+        cpu: 100m     # cpu 最少使用 0.1 个核心，1000m 表示一个核心
+        memory: 128Mi # 内存最少使用 128 兆
+      limits:         # 最多使用多少资源
+        cpu: 200m     # 限制 cpu 最多使用 0.2 个核心
+        memory: 256Mi # 限制最多使用 256 兆
+  
+  restartPolicy: OnFailure  # 重启策略：只有出现失败的情况才会重启
+
