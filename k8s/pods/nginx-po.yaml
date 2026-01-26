@@ -1,7 +1,7 @@
 apiVersion: v1  # api 文档版本
 kind: Pod       # 资源对象类型，也可以配置为 Deployment、Statefulet 等类型的对象
 metadata:       # Pod 对应相关元数据，用于描述 Pod 的数据
-  name: nginx-demo  # Pod 的名称
+  name: nginx-po  # Pod 的名称
   labels:           # 定义 Pod 标签
     type: app       # 自定义 label 标签，名字为 type，值为 app
     test: 1.0.0     # 自定义 label 标签，描述 Pod 版本号
@@ -11,6 +11,20 @@ spec:               # 期望 Pod 按照这下面的描述进行创建
   - name: nginx             # 容器名称
     image: nginx:1.17.9      # 容器的镜像
     imagePullPolicy: IfNotPresent  # 镜像拉取策略，指定如果有本地的就用本地>的镜像，否则拉取远程镜像
+    startupProbe:           # 应用启动探针配置
+      # httpGet:              # 探测方式，基于 http 请求探测
+      #   path: /index.html     # http 请求路径
+      # tcpSocket:            # TCP 探测，无需 url，只检测TCP是否成功连接
+      #  port: 80            # http 请求端口
+      exec:
+        command:
+        - sh
+        - -c
+        - "echo 'success'> /inited" 
+      failureThreshold: 5   # 失败阈值，达到这个值认为启动失败
+      periodSeconds: 10     # 间隔检测时间
+      successThreshold: 1   # 多少次成功才算启动成功
+      timeoutSeconds: 5     # 请求的超时时间
     command:        # 制定容器启动时执行的命令
     - nginx
     - -g
