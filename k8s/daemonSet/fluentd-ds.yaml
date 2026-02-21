@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: DaemonSet             # 创建 DaemonSet 类型资源
+metadata:
+  name: fluentd
+spec:       # daemonSet 的规约          
+  selector:      
+    matchLabels:      # 匹配 pod 标签, 这里匹配标签为 app: logging 的 pod
+      app: logging    # 与下面 template.metadata 中的 labels 匹配
+  template:
+    metadata:
+      labels: # 标签, 配置了 app 和 id
+        app: logging        
+        id: fluentd
+      name: fluentd   # pod 名称
+    spec:   # daemonSet 内部 pod 的规约
+      containers:
+      - name: fluentd-es
+        image: agilestacks/fluentd-elasticsearch:v1.3.0
+        env:                    # 环境变量配置
+          - name: FLUENTD_ARGS  # 环境变量 key
+            value: -qq          # 环境变量 value
+        volumeMounts:   # 挂载配置
+        - name: containers                        # 数据卷名称, 其具体定义在下面的 volumes 中, 这里仅相当于目录别名
+          mountPath: /var/lib/docker/containers   # 将数据卷要挂载到容器哪个目录上
+        - name: varlog
+          mountPath: /varlog
+      volumes:                                # 宿主机数据卷配置
+      - hostPath:                             # 采用主机路径模式定义数据卷
+          type: Directory                     # 数据卷类型, 这里是目录
+          path: /var/lib/docker/containers    # 数据卷路径
+        name: containers                      # 数据卷逻辑名称
+      - hostPath:
+          type: Directory
+          path: /var/log
+        name: varlog
