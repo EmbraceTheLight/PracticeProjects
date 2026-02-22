@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service           # 资源类型 Service
+metadata:
+  name: nginx-svc       # service 名字
+  labels:
+    app: nginx
+spec:
+  selector:             # 匹配哪些 pod 会被该 service 代理
+    app: nginx-deploy   # 所有匹配该标签的 pod 都可以通过该 service 进行访问
+  ports:                # 端口映射
+  - port: 80            # service 自己的端口, 使用内网 ip 访问时使用
+    targetPort: 80      # 目标 pod 端口
+    protocol: TCP       # 可以指定使用的协议, 可选项: TCP UDP SCTP. 默认为 TCP
+    name: web           # 端口名称
+  type: NodePort        # NodePort：随机启动一个端口(30000 - 32767 之间), 映射到 ports 中的端口. 该端口直接绑定到 node 上, 且集群中的每一个 node 都会绑定这个端口, 也可以用于将服务暴露给外部访问, 但这种方式生产环境中不推荐使用, 效率较低
+
