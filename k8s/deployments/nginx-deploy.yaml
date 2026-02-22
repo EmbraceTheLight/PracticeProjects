@@ -25,6 +25,13 @@ spec:
       - image: nginx:1.17.9           # 镜像
         imagePullPolicy: IfNotPresent # 镜像拉取策略
         name: nginx                   # 容器名称
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
       restartPolicy: Always           # 重启策略
       terminationGracePeriodSeconds: 30 # 删除操作销毁 Pod 前等待时间
 
