@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bing
+  name: bing
+spec:
+  type: ExternalName
+  externalName: cn.bing.com
