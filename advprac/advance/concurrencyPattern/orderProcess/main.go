@@ -1,23 +1,16 @@
 package main
 
 import (
+	"advance/concurrencyPattern/customType"
 	"fmt"
 	"math/rand"
 	"time"
 )
 
-type Order struct {
-	ID        int
-	UserID    string
-	Amount    float64
-	Status    string
-	CreatedAt time.Time
-}
-
 // orderProduct 生产者, 生成订单
-func orderProduct(orderChan chan<- Order, number int) {
+func orderProduct(orderChan chan<- customType.Order, number int) {
 	for i := 1; i <= number; i++ {
-		order := Order{
+		order := customType.Order{
 			ID:        0,
 			UserID:    fmt.Sprintf("user_%d", rand.Intn(100)),
 			Amount:    rand.Float64() * 1000,
@@ -32,7 +25,7 @@ func orderProduct(orderChan chan<- Order, number int) {
 }
 
 // orderProcessor 订单处理器, 处理订单
-func orderProcessor(orderChan <-chan Order, resultChan chan<- Order) {
+func orderProcessor(orderChan <-chan customType.Order, resultChan chan<- customType.Order) {
 	for order := range orderChan {
 		order.ID = rand.Intn(100000)
 		order.Status = "Completed"
@@ -42,7 +35,7 @@ func orderProcessor(orderChan <-chan Order, resultChan chan<- Order) {
 }
 
 // orderResultCollector 订单结果收集器, 收集订单处理结果
-func orderResultCollector(resultChan <-chan Order, done chan<- bool) {
+func orderResultCollector(resultChan <-chan customType.Order, done chan<- bool) {
 	for order := range resultChan {
 		fmt.Printf("订单处理结果: ID=%d, 用户ID=%s, 状态=%s\n", order.ID, order.UserID, order.Status)
 	}
@@ -50,8 +43,8 @@ func orderResultCollector(resultChan <-chan Order, done chan<- bool) {
 }
 
 func main() {
-	orderChan := make(chan Order, 100)
-	resultChan := make(chan Order, 100)
+	orderChan := make(chan customType.Order, 100)
+	resultChan := make(chan customType.Order, 100)
 	done := make(chan bool)
 
 	// 生产者:消费者 = 1:3
