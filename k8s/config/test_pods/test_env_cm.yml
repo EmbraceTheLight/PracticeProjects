@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-cm-po
+spec:
+  restartPolicy: Never
+  containers:
+  - name: config-test
+    image: alpine
+    command: ["/bin/sh","-c", "env;sleep 3600"]
+    imagePullPolicy: IfNotPresent
+    volumeMounts:     # 加载数据卷
+    - name: db-config-env       # 加载 volume 中的哪个数据卷，与下面 volumes 中设置的数据卷名字对应
+      mountPath: "/zey/dbconf"  # 想要挂载到容器的哪个目录下
+      readOnly: true            # 设置为只读
+  volumes:                # 数据卷挂载 configMap
+  - name: db-config-env   # 数据卷的名字, 可以随意设置
+    configMap:            # 数据卷类型为 configMap
+      name: test-dir      # configMap 的名字, 必须对应于实际的 configMap 的名字
+      items:              # 对 configMap 中的 key 进行映射, 如果不指定 key，则会将 configMap 中的素有 key 全部转换为一个个同名的文件
+      - key: "db.properties"  # configMap 中的 key
+        path: "db.env"        # 将该 key 的值转换为文件的文件名
+
