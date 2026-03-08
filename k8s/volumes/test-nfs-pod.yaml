@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-test-pod
+spec:
+  containers:
+  - image: nginx:1.17.9
+    name: test-container
+    volumeMounts:
+    - mountPath: /usr/share/nginx/html
+      name: test-volume
+  volumes:
+  - name: test-volume
+    nfs:
+      server: 192.168.17.131              # nfs 服务地址
+      path: /home/zey/data/nfs/rw/www/zeycode  # 要挂载 NFS 服务的数据目录
+      readOnly: false       # 是否只读
