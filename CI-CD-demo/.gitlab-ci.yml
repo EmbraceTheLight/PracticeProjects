@@ -1,0 +1,29 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: always
+    - when: never
+
+stages:
+  - test
+  - build
+
+variables:
+  IMAGE_NAME: registry.example.com/go-ci-demo
+
+test:
+  image: golang:1.24
+  when: manual
+  stage: test
+  script:
+    - go mod download
+    - go test ./...
+
+build:
+  image: docker:latest
+  stage: build
+  when: manual
+  services:
+    - docker:dind
+  script:
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
