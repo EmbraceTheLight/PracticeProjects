@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pvc
+spec:
+  containers:
+  - image: nginx:1.17.9
+    name: test-container
+    volumeMounts:
+    - mountPath: /usr/share/nginx/html
+      name: test-volume
+  volumes:
+  - name: test-volume
+    persistentVolumeClaim:  # 关联 pvc
+      claimName: nfs-pvc    # 要关联到哪个 pvc
