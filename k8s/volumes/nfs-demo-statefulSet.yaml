@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-sc
+  labels:
+    app: nginx-sc
+spec:
+  type: NodePort
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+  selector: 
+    app: nginx-sc
+---
+apiVersion: apps/v1
+kind: StatefulSet         # StatefulSet 类型的资源
+metadata:
+  name: nginx-sc               # StatefulSet 对象的名字
+spec:
+  serviceName: "nginx-sc"    # 使用哪个 service 来管理 nginx
+  replicas: 1
+  selector:
+    matchLabels:          # 指定选择器通过标签进行匹配
+      app: nginx-sc
+  template:
+    metadata:
+      labels:
+        app: nginx-sc
+    spec:
+      containers:
+        - name: nginx
+          imagePullPolicy: IfNotPresent
+          image: nginx:1.17.9
+          ports:                  # 容器内部要暴露的端口
+          volumeMounts:           # 加载数据卷
+          - name: nginx-sc-test-pvc             # 指定加载哪个数据卷
+            mountPath: /usr/share/nginx/html  # 加载到容器中的哪个目录
+  volumeClaimTemplates:       # 数据卷模板
+  - metadata:                 # 数据卷描述
+      name: nginx-sc-test-pvc               # 数据卷名称
+    spec:                     # 数据卷规约
+      storageClassName: managed-nfs-storage
+      accessModes:   # 访问模式
+      - ReadWriteMany
+      resources:
+        requests:
+          storage: 1Gi        # 需要 1G 存储资源
