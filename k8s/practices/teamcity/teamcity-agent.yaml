@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teamcity-agent
+  namespace: teamcity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teamcity-agent
+  template:
+    metadata:
+      labels:
+        app: teamcity-agent
+    spec:
+      containers:
+      - name: teamcity-agent
+        image: docker.m.daocloud.io/jetbrains/teamcity-agent:2025.07.3-linux
+        env:
+        - name: SERVER_URL
+          value: "http://teamcity-service:8111"

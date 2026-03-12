@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume          # 资源类型：pv
+metadata:
+  name: pv-mysql                   # PV 的名字
+spec:
+  capacity:
+    storage: 20Gi                # pv 的容量
+  volumeMode: Filesystem        # 存储类型：文件系统
+  accessModes:                 # 访问模式：ReadWriteOnce ReadWriteMany ReadOnlyMany
+    - ReadWriteOnce             # ReadWriteOnce: 可被单节点读写
+  persistentVolumeReclaimPolicy: Recycle    # 回收策略
+  storageClassName: slow        #
+  mountOptions:                 # 加载配置
+    - hard
+    - nfsvers=4.2               # NFS 版本
+  nfs:                                    # 连接到 nfs
+    path: /home/zey/nfs-data/rw/mysql   # 存储路径 
+    server: k8s-slave01                   # NFS 服务地址
