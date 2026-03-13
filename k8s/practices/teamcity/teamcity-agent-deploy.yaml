@@ -19,3 +19,12 @@ spec:
         env:
         - name: SERVER_URL
           value: "http://teamcity-service:8111"
+        - name: AGENT_NAME
+          value: "k8s-agent-1"
+        volumeMounts:
+        - name: agent-data
+          mountPath: /data/teamcity_agent
+      volumes:
+      - name: agent-data
+        persistentVolumeClaim:
+          claimName: teamcity-agent-data
