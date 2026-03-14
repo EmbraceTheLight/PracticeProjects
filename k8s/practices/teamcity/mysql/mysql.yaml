@@ -5,6 +5,7 @@ metadata:
   name: mysql
   namespace: teamcity
 spec:
+  serviceName: "mysql"
   replicas: 1
   selector:
     matchLabels:

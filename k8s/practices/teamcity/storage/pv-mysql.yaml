@@ -14,5 +14,5 @@ spec:
     - hard
     - nfsvers=4.2               # NFS 版本
   nfs:                                    # 连接到 nfs
-    path: /home/zey/nfs-data/rw/mysql   # 存储路径 
+    path: /home/zey/data/nfs/rw/mysql   # 存储路径 
     server: k8s-slave01                   # NFS 服务地址

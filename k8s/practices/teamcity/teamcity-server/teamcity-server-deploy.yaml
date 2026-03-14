@@ -20,13 +20,13 @@ spec:
         ports:
         - containerPort: 8111
         volumeMounts:
-        - name: teamcity-data
+        - name: teamcity-server-data
           mountPath: /data/teamcity_server/datadir
         - name: teamcity-logs
           mountPath: /opt/teamcity/logs
       volumes:
-      - name: teamcity-data
+      - name: teamcity-server-data
         persistentVolumeClaim:
-          claimName: teamcity-data
+          claimName: teamcity-server-data
       - name: teamcity-logs
         emptyDir: {}

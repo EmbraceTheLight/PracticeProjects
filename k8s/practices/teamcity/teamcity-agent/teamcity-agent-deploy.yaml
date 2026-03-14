@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: teamcity-agent
-        image: docker.m.daocloud.io/jetbrains/teamcity-agent:2025.07.3-linux
+        image: docker.m.daocloud.io/jetbrains/teamcity-agent:2025.07.3-linux-sudo
         env:
         - name: SERVER_URL
           value: "http://teamcity-service:8111"
