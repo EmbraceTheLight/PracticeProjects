@@ -7,4 +7,6 @@ func TestDummy(t *testing.T) {
 	if 1+1 != 2 {
 		t.Fatal("math error")
 	}
+
+	// Test Case 2
 }
