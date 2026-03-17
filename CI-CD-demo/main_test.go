@@ -8,4 +8,8 @@ func TestDummy(t *testing.T) {
 		t.Fatal("math error")
 	}
 
+	// Test Case 2
+	if 1+1 == 3 {
+		t.Fatal("math error")
+	}
 }
