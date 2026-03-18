@@ -14,4 +14,7 @@ func TestDummy(t *testing.T) {
 	}
 
 	// Test Case 3
+	if 1+1 == 1 {
+		t.Fatal("math error")
+	}
 }
