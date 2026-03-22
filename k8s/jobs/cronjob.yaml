@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: CronJob           # 类型：定时任务
+metadata:
+  name: cron-job-test   # 定时任务名字
+spec:
+  schedule: "* * * * *" # 调度策略
+  concurrencyPolicy: Allow  # 并发调度策略，Allow 允许并发调度，Forbid：不允许并发执行，Replace：若之前的任务还未执行完，则直接执行新的，放弃上一个任务
+  # artingDeadlineSeconds: 30 # Job 延迟开始的最后期限。表示 Job 因某种原因错过了调度时间，开始该 Job 的最晚截止时间，单位：秒。若错过这个时间，则被视为失败的 Job
+  failedJobsHistoryLimit: 1 # 保留多少失败的任务历史记录
+  successfulJobsHistoryLimit: 3   # 保留多少成功的任务历史记录
+  suspend: false            # 是否挂起任务，若为 true 则表示该任务会被挂起，不会被执行，直到取消挂起为止
+  jobTemplate:  
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+
