@@ -1,0 +1,70 @@
+apiVersion: apps/v1       # deployment api 版本
+kind: Deployment          # 资源类型: deployment
+metadata:                 # 元信息
+  labels:                 # 标签
+    app: nginx-deploy-node-affinity     # 具体的 key-value 配置形式
+  name: nginx-deploy-node-affinity      # deployment 的名字
+  namespace: schedule      # 所在的命名空间
+spec:
+  replicas: 3             # 期望副本数
+  revisionHistoryLimit: 10  #进行滚动更新后，保留的历史版本数
+  selector:                 # 选择器，用于找到匹配的 replica set
+    matchLabels:            # 按照标签匹配
+      app: nginx-deploy-node-affinity     # 匹配的标签 key-value
+  strategy:                 # 更新策略
+    rollingUpdate:          # 使用滚动更新
+      maxSurge: 25%         # 进行滚动更新时，更新的个数最对可以超过期望的副本数/比例
+      maxUnavailable: 25%   # 进行滚动更新时，最大不可用实例比例
+    type: RollingUpdate     # 更新类型，采用滚动更新 
+  template:                     # Pod 模板
+    metadata:                   # Pod 元信息
+      labels:                   # Pod 标签
+        app: nginx-deploy-node-affinity
+    spec:                         
+      affinity:             
+        nodeAffinity:                 # 节点亲和性
+          requiredDuringSchedulingIgnoredDuringExecution: # 节点必须满足的条件
+            nodeSelectorTerms:        # 节点选择器配置
+            - matchExpressions:       # 要匹配的标签
+              - key: must-satisfy     # 节点必须具有 key 为 must-satisfy 标签, 标签的值必须为 value1 或 value2
+                operator: In
+                values:     
+                - value1
+                - value2
+          preferredDuringSchedulingIgnoredDuringExecution:  # 节点最好满足的条件
+          - weight: 1                     # 权重，最小为 1，最大为 100
+            preference:
+              matchExpressions:
+              - key: label-1              # 标签的 key 为 label-1，value 为 value-2
+                operator: In
+                values:
+                - value-1 
+                - value-2
+          - weight: 50
+            preference:
+              matchExpressions:
+              - key: label-2              # 标签的 key 为 label-2，value 为 value-1
+                operator: NotIn
+                values:
+                - value-1
+                - value-2
+      tolerations:
+      - key: "memory"
+        value: "low"
+        operator: "Equal"
+        effect: "NoExecute"
+        tolerationSeconds: 10
+      containers:                     # Pod 容器信息
+      - image: nginx:1.17.9           # 镜像
+        imagePullPolicy: IfNotPresent # 镜像拉取策略
+        name: nginx                   # 容器名称
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      restartPolicy: Always           # 重启策略
+      terminationGracePeriodSeconds: 30 # 删除操作销毁 Pod 前等待时间
+
