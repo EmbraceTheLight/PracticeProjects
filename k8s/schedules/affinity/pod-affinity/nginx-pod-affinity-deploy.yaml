@@ -1,0 +1,57 @@
+apiVersion: apps/v1       # deployment api 版本
+kind: Deployment          # 资源类型: deployment
+metadata:                 # 元信息
+  labels:                 # 标签
+    app: nginx-pod-affinity-deploy     # 具体的 key-value 配置形式
+  name: nginx-pod-affinity-deploy      # deployment 的名字
+  namespace: schedule      # 所在的命名空间
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:                 
+    matchLabels:
+      app: nginx-pod-affinity-deploy     
+  strategy:                 
+    rollingUpdate:          
+      maxSurge: 25%         
+      maxUnavailable: 25%   
+    type: RollingUpdate     
+  template:                     
+    metadata:                   
+      labels:                   # Pod 标签
+        app: nginx-pod-affinity-deploy       
+    spec:                             # Pod 期望信息
+      affinity:
+        podAffinity:                  # Pod 亲和性
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: kubernetes.io/hostname  # 节点标签
+        podAntiAffinity:               # Pod 反亲和性
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: security
+                  operator: In
+                  values:
+                  - S2
+              topologyKey: kubernetes.io/hostname
+      containers:                     # Pod 容器信息
+      - image: nginx:1.17.9           # 镜像
+        imagePullPolicy: IfNotPresent # 镜像拉取策略
+        name: nginx                   # 容器名称
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      restartPolicy: Always           # 重启策略
+      terminationGracePeriodSeconds: 30 # 删除操作销毁 Pod 前等待时间
