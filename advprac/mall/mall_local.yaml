@@ -1,0 +1,28 @@
+server:
+  http_port: 8080
+  env: dev
+  enable_full_pprof: false
+  log_level: debug
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  username: root
+  password: YTGyhPntlpcYxs17Up3d
+  database: adv_mall
+  charset: true
+  max_idle: 5
+  max_open: 20
+  log_level: 3  # 0: silent, 1: error, 2: warn, 3: info, 4: debug
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  pool_timeout: 4s
+  pool_size: 10
+  max_retries: 3
+  min_idle_conns: 10
+  max_idle: 2
+  max_open: 10
