@@ -3,11 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	gormLog "gorm.io/gorm/logger"
 	adaptor "mall/adaptor"
 	"mall/config"
 	"mall/router"
@@ -47,22 +44,7 @@ func startServer(conf *config.Config, db *gorm.DB, redis *redis.Client) *router.
 }
 
 func initMySQL(mysqlConf *config.Mysql) (*gorm.DB, error) {
-	host, port, username, password, dbname := mysqlConf.Host, mysqlConf.Port, mysqlConf.Username, mysqlConf.Password, mysqlConf.Database
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, dbname)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
-	if err != nil {
-		return nil, err
-	}
-	db.Logger.LogMode(gormLog.LogLevel(mysqlConf.LogLevel))
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-	sqlDB.SetMaxIdleConns(int(mysqlConf.MaxIdle))
-	sqlDB.SetMaxOpenConns(int(mysqlConf.MaxOpen))
-	return db, nil
+	return adaptor.NewMysqlData(mysqlConf)
 }
 
 func initRedis(redisConf *config.Redis) (*redis.Client, error) {
