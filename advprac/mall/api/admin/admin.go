@@ -9,13 +9,13 @@ import (
 )
 
 type Controller struct {
-	adaptor *adaptor.Adaptor
+	adaptor adaptor.IAdaptor
 
 	// services
 	adminSvc *admin.Service
 }
 
-func NewCtrl(adaptor *adaptor.Adaptor) *Controller {
+func NewCtrl(adaptor adaptor.IAdaptor) *Controller {
 	return &Controller{
 		adaptor:  adaptor,
 		adminSvc: admin.NewService(adaptor),

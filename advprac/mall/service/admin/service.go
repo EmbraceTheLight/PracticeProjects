@@ -9,7 +9,7 @@ type Service struct {
 	adminUSer admin.IAdminUser
 }
 
-func NewService(adaptor *adaptor.Adaptor) *Service {
+func NewService(adaptor adaptor.IAdaptor) *Service {
 	return &Service{
 		adminUSer: admin.NewAdminUserRepo(adaptor),
 	}

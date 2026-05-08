@@ -18,7 +18,7 @@ type adminRepo struct {
 	redis *redis.Client
 }
 
-func NewAdminUserRepo(adaptor *adaptor.Adaptor) IAdminUser {
+func NewAdminUserRepo(adaptor adaptor.IAdaptor) IAdminUser {
 	return &adminRepo{
 		db:    adaptor.GetDB(),
 		redis: adaptor.GetRedis(),

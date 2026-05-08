@@ -21,17 +21,15 @@ type Router struct {
 	FullPPROF bool
 	rootPath  string
 	conf      *config.Config
-	adaptor   *adaptor.Adaptor
 	checkFunc func() error
 	admin     *admin.Controller
 	customer  *customer.Controller
 }
 
-func NewRouter(adaptor *adaptor.Adaptor, conf *config.Config, checkFunc func() error) *Router {
+func NewRouter(adaptor adaptor.IAdaptor, conf *config.Config, checkFunc func() error) *Router {
 	return &Router{
 		FullPPROF: conf.HttpServer.EnableFullPPROF,
 		rootPath:  "/api/mall",
-		adaptor:   adaptor,
 		conf:      conf,
 		checkFunc: checkFunc,
 		admin:     admin.NewCtrl(adaptor),
@@ -70,7 +68,7 @@ func (r *Router) AccessRecordFilter(ctx *gin.Context) bool {
 }
 
 func (r *Router) route(root *gin.RouterGroup) {
-	adminRoot := root.Group("/admin")
+	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter))
 	adminRoot.GET("/user/info", r.admin.GetUserInfo)
 
 }

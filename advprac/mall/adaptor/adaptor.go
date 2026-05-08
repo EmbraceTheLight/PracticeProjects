@@ -9,6 +9,11 @@ import (
 	"mall/config"
 )
 
+type IAdaptor interface {
+	GetConfig() *config.Config
+	GetDB() *gorm.DB
+	GetRedis() *redis.Client
+}
 type Adaptor struct {
 	conf  *config.Config
 	db    *gorm.DB
@@ -40,6 +45,10 @@ func NewMysqlData(mysqlConf *config.Mysql) (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(int(mysqlConf.MaxIdle))
 	sqlDB.SetMaxOpenConns(int(mysqlConf.MaxOpen))
 	return db, nil
+}
+
+func (a *Adaptor) GetConfig() *config.Config {
+	return a.conf
 }
 
 func (a *Adaptor) GetDB() *gorm.DB {
