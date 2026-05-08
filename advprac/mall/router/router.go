@@ -70,5 +70,7 @@ func (r *Router) AccessRecordFilter(ctx *gin.Context) bool {
 }
 
 func (r *Router) route(root *gin.RouterGroup) {
-	root.GET("/hello", r.admin.HelloWorld)
+	adminRoot := root.Group("/admin")
+	adminRoot.GET("/user/info", r.admin.GetUserInfo)
+
 }

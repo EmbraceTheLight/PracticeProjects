@@ -5,11 +5,12 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"mall/adaptor"
-	"mall/service/do"
+	"mall/adaptor/repo/model"
+	"mall/adaptor/repo/query"
 )
 
 type IAdminUser interface {
-	HelloWorld(ctx context.Context, req *do.HelloWorld) (string, error)
+	GetUserInfo(ctx context.Context, userId int64) (*model.AdminUser, error)
 }
 
 type adminRepo struct {
@@ -24,6 +25,7 @@ func NewAdminUserRepo(adaptor *adaptor.Adaptor) IAdminUser {
 	}
 }
 
-func (a *adminRepo) HelloWorld(ctx context.Context, req *do.HelloWorld) (string, error) {
-	return "hello world", nil
+func (a *adminRepo) GetUserInfo(ctx context.Context, userId int64) (*model.AdminUser, error) {
+	qs := query.Use(a.db).AdminUser
+	return qs.WithContext(ctx).Where(qs.ID.Eq(userId)).First()
 }

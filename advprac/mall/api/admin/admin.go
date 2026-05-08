@@ -6,7 +6,6 @@ import (
 	"mall/api"
 	"mall/common"
 	"mall/service/admin"
-	"mall/service/dto"
 )
 
 type Controller struct {
@@ -23,7 +22,8 @@ func NewCtrl(adaptor *adaptor.Adaptor) *Controller {
 	}
 }
 
-func (c *Controller) HelloWorld(ctx *gin.Context) {
-	resp, errno := c.adminSvc.HelloWorld(ctx.Request.Context(), &common.AdminUser{}, &dto.HelloWorldReq{Name: "ad"})
-	api.WriteResp(ctx, resp, errno)
+func (c *Controller) GetUserInfo(ctx *gin.Context) {
+	// 获取 token
+	repo, errno := c.adminSvc.GetUserInfo(ctx.Request.Context(), &common.AdminUser{})
+	api.WriteResp(ctx, repo, errno)
 }
