@@ -64,7 +64,7 @@ func (r *Router) SpanFilter(ctx *gin.Context) bool {
 	return false
 }
 func (r *Router) AccessRecordFilter(ctx *gin.Context) bool {
-	return false
+	return true
 }
 
 func (r *Router) route(root *gin.RouterGroup) {
