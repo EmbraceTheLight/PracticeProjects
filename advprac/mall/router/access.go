@@ -6,13 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
+	"mall/consts"
 	"mall/utils/logger"
 	"time"
-)
-
-const (
-	AdminTokenKey = "token"
-	UserTokenKey  = "token"
 )
 
 // GetRequestBody 获取请求体
@@ -55,7 +51,7 @@ func AccessLogMiddleware(filter func(c *gin.Context) bool) gin.HandlerFunc {
 			zap.String("path", c.Request.URL.Path),
 			zap.String("params", c.Request.URL.RawQuery),
 			zap.String("body", body),
-			zap.String("token", c.GetHeader(UserTokenKey)),
+			zap.String("token", c.GetHeader(consts.UserTokenKey)),
 		}
 
 		var responseBuffer bytes.Buffer

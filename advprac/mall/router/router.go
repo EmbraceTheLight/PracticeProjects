@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"mall/adaptor"
 	"mall/api"
@@ -51,7 +52,6 @@ func (r *Router) checkServer() func(ctx *gin.Context) {
 }
 
 func (r *Router) Register(app *gin.Engine) {
-	app.Use(AuthMiddleware(r.SpanFilter))
 	if r.conf.HttpServer.EnableFullPPROF {
 		SetupPprof(app, "/debug/pprof")
 	}
@@ -68,7 +68,21 @@ func (r *Router) AccessRecordFilter(ctx *gin.Context) bool {
 }
 
 func (r *Router) route(root *gin.RouterGroup) {
-	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter))
-	adminRoot.GET("/user/info", r.admin.GetUserInfo)
+	r.adminRoute(root)
+	r.customerRoute(root)
+}
 
+func (r *Router) customerRoute(root *gin.RouterGroup) {
+	cstRoot := root.Group("/customer", AuthMiddleware(r.SpanFilter, func(ctx context.Context, token string) (*common.User, error) {
+		return nil, nil
+	}))
+	cstRoot.GET("/user/info", r.admin.GetUserInfo)
+
+}
+
+func (r *Router) adminRoute(root *gin.RouterGroup) {
+	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter, func(ctx context.Context, token string) (*common.AdminUser, error) {
+		return nil, nil
+	}))
+	adminRoot.GET("/user/info", r.admin.GetUserInfo)
 }
