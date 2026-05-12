@@ -25,11 +25,11 @@ func (err Errno) WithError(rawError error) Errno {
 }
 
 var (
-	Ok              = Errno{Code: 200, Msg: "OK"}
-	ServeError      = Errno{Code: 500, Msg: "Internal Server Error"}
-	ParamError      = Errno{Code: 400, Msg: "Bad Request"}
-	AuthError       = Errno{Code: 401, Msg: "Unauthorized"}
-	PermissionError = Errno{Code: 403, Msg: "Forbidden"}
+	Ok            = Errno{Code: 200, Msg: "OK"}
+	ServeErr      = Errno{Code: 500, Msg: "Internal Server Error"}
+	ParamErr      = Errno{Code: 400, Msg: "Bad Request"}
+	AuthErr       = Errno{Code: 401, Msg: "Unauthorized"}
+	PermissionErr = Errno{Code: 403, Msg: "Forbidden"}
 
 	DatabaseErr = Errno{Code: 10000, Msg: "Database Error"}
 	RedisErr    = Errno{Code: 10001, Msg: "Redis Error"}

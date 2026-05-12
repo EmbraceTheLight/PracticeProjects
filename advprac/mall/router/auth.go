@@ -21,14 +21,14 @@ func AuthMiddleware(filter func(c *gin.Context) bool, getTokenFunc TokenFunc) gi
 		}
 		token := ctx.GetHeader(consts.UserTokenKey)
 		if len(token) == 0 {
-			ctx.JSON(http.StatusUnauthorized, common.AuthError)
+			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
 		}
 		// 用户鉴权逻辑
 		user, err := getTokenFunc(ctx, token)
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, common.AuthError)
+			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
 		}
@@ -47,14 +47,14 @@ func AdminAuthMiddleware(filter func(c *gin.Context) bool, getAdminTokenFunc Tok
 		}
 		token := ctx.GetHeader(consts.AdminTokenKey)
 		if len(token) == 0 {
-			ctx.JSON(http.StatusUnauthorized, common.AuthError)
+			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
 		}
 		// 管理员鉴权逻辑
 		adminUser, err := getAdminTokenFunc(ctx, token)
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, common.AuthError)
+			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
 		}

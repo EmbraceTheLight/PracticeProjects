@@ -45,6 +45,7 @@ func AccessLogMiddleware(filter func(c *gin.Context) bool) gin.HandlerFunc {
 		}
 		begin := time.Now()
 		body := GetRequestBody(c)
+		c.Request.Body = io.NopCloser(bytes.NewBufferString(body)) // 重新赋值请求体 Body, 上一步读取请求体 body 会导致其被清空
 		fileds := []zap.Field{
 			zap.String("ip", c.RemoteIP()),
 			zap.String("method", c.Request.Method),
