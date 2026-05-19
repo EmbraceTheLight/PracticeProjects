@@ -6,13 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
+	"mall/consts"
 	"mall/utils/logger"
 	"time"
-)
-
-const (
-	AdminTokenKey = "token"
-	UserTokenKey  = "token"
 )
 
 // GetRequestBody 获取请求体
@@ -49,13 +45,14 @@ func AccessLogMiddleware(filter func(c *gin.Context) bool) gin.HandlerFunc {
 		}
 		begin := time.Now()
 		body := GetRequestBody(c)
-		fileds := []zap.Field{
+		c.Request.Body = io.NopCloser(bytes.NewBufferString(body)) // 重新赋值请求体 Body, 上一步读取请求体 body 会导致其被清空
+		fields := []zap.Field{
 			zap.String("ip", c.RemoteIP()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
 			zap.String("params", c.Request.URL.RawQuery),
 			zap.String("body", body),
-			zap.String("token", c.GetHeader(UserTokenKey)),
+			zap.String("token", c.GetHeader(consts.UserTokenKey)),
 		}
 
 		var responseBuffer bytes.Buffer
@@ -72,13 +69,13 @@ func AccessLogMiddleware(filter func(c *gin.Context) bool) gin.HandlerFunc {
 
 		// 记录请求消耗的时间, 单位: 毫秒
 		elapsedTimeStr := fmt.Sprintf("%d ms", time.Since(begin).Milliseconds())
-		fileds = append(fileds, zap.String("duration", elapsedTimeStr))
+		fields = append(fields, zap.String("duration", elapsedTimeStr))
 
 		// 记录响应状态码
-		fileds = append(fileds, zap.Int("status", c.Writer.Status()))
+		fields = append(fields, zap.Int("status", c.Writer.Status()))
 
 		// 记录响应数据
-		fileds = append(fileds, zap.String("resp", GetResponseBody(&responseBuffer)))
-		logger.Info("access log", fileds...)
+		fields = append(fields, zap.String("resp", GetResponseBody(&responseBuffer)))
+		logger.Info("access log", fields...)
 	}
 }
