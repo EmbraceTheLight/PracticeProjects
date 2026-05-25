@@ -13,6 +13,7 @@ import (
 
 type IAdminUser interface {
 	GetUserInfo(ctx context.Context, userId int64) (*model.AdminUser, error)
+
 	CreateUser(ctx context.Context, req *do.CreateUser) (int64, error)
 	UpdateUser(ctx context.Context, req *do.UpdateUser) error
 	UpdateUserStatus(ctx context.Context, req *do.UpdateUserStatus) error

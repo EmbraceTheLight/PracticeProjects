@@ -16,7 +16,7 @@ mysql:
 redis:
   host: 127.0.0.1
   port: 6379
-  password: ""
+  password: "F095PfRdmuw5efTZJ2jf"
   dial_timeout: 5s
   read_timeout: 3s
   write_timeout: 3s

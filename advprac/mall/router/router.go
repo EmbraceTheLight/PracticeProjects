@@ -61,6 +61,9 @@ func (r *Router) Register(app *gin.Engine) {
 }
 
 func (r *Router) SpanFilter(ctx *gin.Context) bool {
+	if AdminAuthWhiteList[ctx.Request.URL.Path] == true {
+		return true
+	}
 	return false
 }
 func (r *Router) AccessRecordFilter(ctx *gin.Context) bool {
@@ -86,6 +89,8 @@ func (r *Router) adminRoute(root *gin.RouterGroup) {
 			UserId: 1,
 			Name:   "admin"}, nil
 	}))
+	// 登录, 不应鉴权, 添加到白名单
+	adminRoot.GET("/v1/user/verify/captcha", r.admin.GetSmsCodeCaptcha)
 	adminRoot.GET("/v1/user/info", r.admin.GetUserInfo)
 	adminRoot.POST("/v1/user/create", r.admin.CreateUser)
 	adminRoot.POST("/v1/user/update", r.admin.UpdateUser)
