@@ -13,6 +13,16 @@ func (c *Controller) GetSmsCodeCaptcha(ctx *gin.Context) {
 		api.WriteResp(ctx, nil, common.ParamErr.WithError(err))
 		return
 	}
-	captchaData, errno := c.adminSvc.GetSlideCaptcha(ctx)
+	captchaData, errno := c.adminSvc.GetSlideCaptcha(ctx.Request.Context())
+	api.WriteResp(ctx, captchaData, errno)
+}
+
+func (c *Controller) CheckSmsCodeCaptcha(ctx *gin.Context) {
+	req := &dto.CheckCaptchaReq{}
+	if err := ctx.BindJSON(req); err != nil {
+		api.WriteResp(ctx, nil, common.ParamErr.WithError(err))
+		return
+	}
+	captchaData, errno := c.adminSvc.CheckSlideCaptcha(ctx.Request.Context(), req)
 	api.WriteResp(ctx, captchaData, errno)
 }

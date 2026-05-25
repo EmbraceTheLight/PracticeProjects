@@ -91,6 +91,7 @@ func (r *Router) adminRoute(root *gin.RouterGroup) {
 	}))
 	// 登录, 不应鉴权, 添加到白名单
 	adminRoot.GET("/v1/user/verify/captcha", r.admin.GetSmsCodeCaptcha)
+	adminRoot.POST("/v1/user/verify/captcha/check", r.admin.CheckSmsCodeCaptcha)
 	adminRoot.GET("/v1/user/info", r.admin.GetUserInfo)
 	adminRoot.POST("/v1/user/create", r.admin.CreateUser)
 	adminRoot.POST("/v1/user/update", r.admin.UpdateUser)

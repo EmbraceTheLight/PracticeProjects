@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"github.com/bytedance/sonic"
+	"github.com/wenlng/go-captcha/v2/slide"
 	"go.uber.org/zap"
 	"mall/common"
 	"mall/service/dto"
@@ -59,4 +60,32 @@ func (s *Service) GetSlideCaptcha(ctx context.Context) (*dto.GetVerifyCaptchaRes
 		TileY:           dotData.DY,
 		Expire:          110,
 	}, common.Ok
+}
+
+func (s *Service) CheckSlideCaptcha(ctx context.Context, req *dto.CheckCaptchaReq) (*dto.CheckCaptchaResp, common.Errno) {
+	captData, err := s.verify.GetCaptchaKey(ctx, req.Key)
+	if err != nil {
+		logger.Error("CheckSlideCaptcha GetCaptchaKey error", zap.Error(err))
+		return nil, common.RedisErr.WithError(err)
+	}
+	if captData == "" {
+		return nil, common.ParamErr.WithMsg("滑块已过期, 请刷新重试")
+	}
+	dot := slide.Block{}
+	err = sonic.Unmarshal([]byte(captData), &dot)
+	if err != nil {
+		logger.Error("CheckSlideCaptcha Unmarshal error", zap.Error(err))
+		return nil, common.InvalidCaptchaErr.WithError(err)
+	}
+	ok := slide.Validate(req.SlideX, req.SlideY, dot.DX, dot.DY, 5)
+	if !ok {
+		return nil, common.InvalidCaptchaErr
+	}
+	ticket := tools.UUIDHex()
+	err = s.verify.SetCaptchaTicket(ctx, ticket, req.Key, 6*time.Minute)
+	if err != nil {
+		logger.Error("CheckSlideCaptcha SetCaptchaTicket error", zap.Error(err))
+		return nil, common.RedisErr.WithError(err)
+	}
+	return &dto.CheckCaptchaResp{Ticket: ticket, Expire: 320}, common.Ok
 }

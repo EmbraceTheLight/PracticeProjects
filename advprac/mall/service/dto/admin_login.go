@@ -13,13 +13,24 @@ type GetVerifyCaptchaResp struct {
 	TileWidth       int    `json:"tile_width"`
 	TileX           int    `json:"tile_x"`
 	TileY           int    `json:"tile_y"`
-	Expire          int    `json:"expire"`
+	Expire          int    `json:"expire"` // 过期时间
 }
 
 type GetVerifyCaptchaReq struct {
 	Once string `url:"once"`
 	Time int64  `url:"timestamp"`
 	Sign string `url:"sign"` // 密钥加密: md5(once + zey2026+ ts)
+}
+
+type CheckCaptchaReq struct {
+	Key    string `json:"key"`
+	SlideX int    `json:"slide_x"`
+	SlideY int    `json:"slide_y"`
+}
+
+type CheckCaptchaResp struct {
+	Ticket string `json:"ticket"`
+	Expire int64  `json:"expire"`
 }
 
 func (r *GetVerifyCaptchaReq) CheckSign() bool {
