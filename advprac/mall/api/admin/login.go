@@ -26,3 +26,17 @@ func (c *Controller) CheckSmsCodeCaptcha(ctx *gin.Context) {
 	captchaData, errno := c.adminSvc.CheckSlideCaptcha(ctx.Request.Context(), req)
 	api.WriteResp(ctx, captchaData, errno)
 }
+
+func (c *Controller) MobilePasswordLogin(ctx *gin.Context) {
+	req := &dto.MobilePasswordLoginReq{}
+	if err := ctx.BindJSON(req); err != nil {
+		api.WriteResp(ctx, nil, common.ParamErr.WithError(err))
+		return
+	}
+	userData, errno := c.adminSvc.UserMobilePasswordLogin(ctx.Request.Context(), &dto.MobilePasswordLoginReq{
+		Mobile:   req.Mobile,
+		Password: req.Password,
+		Ticket:   req.Ticket,
+	})
+	api.WriteResp(ctx, userData, errno)
+}

@@ -13,6 +13,7 @@ import (
 
 type IAdminUser interface {
 	GetUserInfo(ctx context.Context, userId int64) (*model.AdminUser, error)
+	GetUserByMobile(ctx context.Context, mobile string) (*model.AdminUser, error)
 
 	CreateUser(ctx context.Context, req *do.CreateUser) (int64, error)
 	UpdateUser(ctx context.Context, req *do.UpdateUser) error
@@ -77,4 +78,9 @@ func (a *adminRepo) UpdateUserStatus(ctx context.Context, req *do.UpdateUserStat
 		return err
 	}
 	return nil
+}
+
+func (a *adminRepo) GetUserByMobile(ctx context.Context, mobile string) (*model.AdminUser, error) {
+	qs := query.Use(a.db).AdminUser
+	return qs.WithContext(ctx).Where(qs.Mobile.Eq(mobile)).First()
 }

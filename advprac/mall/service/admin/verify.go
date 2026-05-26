@@ -81,6 +81,9 @@ func (s *Service) CheckSlideCaptcha(ctx context.Context, req *dto.CheckCaptchaRe
 	if !ok {
 		return nil, common.InvalidCaptchaErr
 	}
+
+	// 图形验证通过, 设置 ticket, 作为后续登录票据凭证, 防止恶意刷登录接口
+	// 前端在后续发送登录请求时携带该 ticket
 	ticket := tools.UUIDHex()
 	err = s.verify.SetCaptchaTicket(ctx, ticket, req.Key, 6*time.Minute)
 	if err != nil {

@@ -33,6 +33,17 @@ type CheckCaptchaResp struct {
 	Expire int64  `json:"expire"`
 }
 
+type MobilePasswordLoginReq struct {
+	Mobile   string `json:"mobile"`
+	Password string `json:"password"`
+	Ticket   string `json:"ticket"`
+}
+
+type MobilePasswordLoginResp struct {
+	Token string           `json:"token"`
+	User  *GetUserInfoResp `json:"user"`
+}
+
 func (r *GetVerifyCaptchaReq) CheckSign() bool {
 	return r.Sign == tools.Sha256Hash(fmt.Sprintf("%s%s%d", r.Once, "zey2026", r.Time))
 }

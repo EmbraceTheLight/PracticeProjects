@@ -9,14 +9,14 @@ import (
 )
 
 type Service struct {
-	adminUSer admin.IAdminUser
+	adminUser admin.IAdminUser
 	verify    redis.IVerify
 	captcha   slide.Captcha
 }
 
 func NewService(adaptor adaptor.IAdaptor) *Service {
 	return &Service{
-		adminUSer: admin.NewAdminUserRepo(adaptor),
+		adminUser: admin.NewAdminUserRepo(adaptor),
 		verify:    redis.NewVerify(adaptor),
 		captcha:   captcha.NewSlideCaptcha(),
 	}

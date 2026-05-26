@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) (*dto.GetUserInfoResp, common.Errno) {
-	user, err := s.adminUSer.GetUserInfo(ctx, req.ID)
+	user, err := s.adminUser.GetUserInfo(ctx, req.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, common.UserNotFoundErr
@@ -27,7 +27,7 @@ func (s *Service) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) (*dt
 }
 
 func (s *Service) CreateUser(ctx context.Context, adminUser *common.AdminUser, req *dto.CreateUserReq) (int64, common.Errno) {
-	userID, err := s.adminUSer.CreateUser(ctx, &do.CreateUser{
+	userID, err := s.adminUser.CreateUser(ctx, &do.CreateUser{
 		CreateBy: adminUser.UserId,
 		Name:     req.Name,
 		NickName: req.NickName,
@@ -42,7 +42,7 @@ func (s *Service) CreateUser(ctx context.Context, adminUser *common.AdminUser, r
 }
 
 func (s *Service) UpdateUser(ctx context.Context, adminUser *common.AdminUser, req *dto.UpdateUserReq) common.Errno {
-	err := s.adminUSer.UpdateUser(ctx, &do.UpdateUser{
+	err := s.adminUser.UpdateUser(ctx, &do.UpdateUser{
 		UpdateBy: adminUser.UserId,
 		ID:       req.ID,
 		Name:     req.Name,
@@ -57,7 +57,7 @@ func (s *Service) UpdateUser(ctx context.Context, adminUser *common.AdminUser, r
 }
 
 func (s *Service) UpdateUserStatus(ctx context.Context, adminUser *common.AdminUser, req *dto.UpdateUserStatusReq) common.Errno {
-	err := s.adminUSer.UpdateUserStatus(ctx, &do.UpdateUserStatus{
+	err := s.adminUser.UpdateUserStatus(ctx, &do.UpdateUserStatus{
 		UpdateBy: adminUser.UserId,
 		ID:       req.ID,
 		Status:   req.Status,
