@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"mall/api"
 	"mall/common"
@@ -39,4 +40,12 @@ func (c *Controller) MobilePasswordLogin(ctx *gin.Context) {
 		Ticket:   req.Ticket,
 	})
 	api.WriteResp(ctx, userData, errno)
+}
+
+func (c *Controller) GetAdminUserByToken(ctx context.Context, token string) (*common.AdminUser, common.Errno) {
+	adminUser, err := c.adminSvc.GetAdminUserByToken(ctx, token)
+	if err.NotOk() {
+		return nil, err
+	}
+	return adminUser, common.Ok
 }

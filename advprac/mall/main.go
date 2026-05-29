@@ -8,6 +8,7 @@ import (
 	adaptor "mall/adaptor"
 	"mall/config"
 	"mall/router"
+	auth "mall/utils/jwt"
 	"mall/utils/logger"
 	"strconv"
 	"time"
@@ -24,13 +25,16 @@ func main() {
 	rdbClient, err := initRedis(conf.Redis)
 	handleErr(err)
 
+	jwtAuth, err := initJwtAuth(conf.Jwt)
+	handleErr(err)
+
 	logger.Debug("Redis init success")
 
-	startServer(conf, dbClient, rdbClient).Run()
+	startServer(conf, dbClient, rdbClient, jwtAuth).Run()
 }
 
-func startServer(conf *config.Config, db *gorm.DB, redis *redis.Client) *router.App {
-	adpt := adaptor.NewAdaptor(conf, db, redis)
+func startServer(conf *config.Config, db *gorm.DB, redis *redis.Client, jwtAuth *auth.JWTAuth) *router.App {
+	adpt := adaptor.NewAdaptor(conf, db, redis, jwtAuth)
 	return router.NewApp(conf.HttpServer.HttpPort, router.NewRouter(adpt, conf, func() error {
 		pingDB, err := db.DB()
 		handleErr(err)
@@ -62,6 +66,9 @@ func initRedis(redisConf *config.Redis) (*redis.Client, error) {
 	return client, nil
 }
 
+func initJwtAuth(jwtAuthConf *config.Jwt) (*auth.JWTAuth, error) {
+	return auth.NewJWTAuth(jwtAuthConf), nil
+}
 func handleErr(err error) {
 	if err != nil {
 		panic(err)

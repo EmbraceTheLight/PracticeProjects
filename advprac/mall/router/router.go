@@ -76,7 +76,7 @@ func (r *Router) route(root *gin.RouterGroup) {
 }
 
 func (r *Router) customerRoute(root *gin.RouterGroup) {
-	cstRoot := root.Group("/customer", AuthMiddleware(r.SpanFilter, func(ctx context.Context, token string) (*common.User, error) {
+	cstRoot := root.Group("/customer", AuthMiddleware(r.SpanFilter, func(ctx context.Context, userId string) (*common.User, error) {
 		return nil, nil
 	}))
 	cstRoot.GET("/user/info", r.admin.GetUserInfo)
@@ -84,10 +84,9 @@ func (r *Router) customerRoute(root *gin.RouterGroup) {
 }
 
 func (r *Router) adminRoute(root *gin.RouterGroup) {
-	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter, func(ctx context.Context, token string) (*common.AdminUser, error) {
-		return &common.AdminUser{
-			UserId: 1,
-			Name:   "admin"}, nil
+	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter, func(ctx context.Context, adminUserId string) (*common.AdminUser, error) {
+		adminUser, err := r.admin.GetUserAdminByToken(ctx, adminUserId)
+		return adminUser, err
 	}))
 	// 登录, 不应鉴权, 添加到白名单
 	adminRoot.GET("/v1/user/verify/captcha", r.admin.GetSmsCodeCaptcha)

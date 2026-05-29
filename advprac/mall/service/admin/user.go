@@ -11,7 +11,7 @@ import (
 	"mall/utils/logger"
 )
 
-func (s *Service) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) (*dto.GetUserInfoResp, common.Errno) {
+func (s *Service) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) (*dto.UserInfoDto, common.Errno) {
 	user, err := s.adminUser.GetUserInfo(ctx, req.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -20,7 +20,7 @@ func (s *Service) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) (*dt
 		logger.Error("GetUserInfo error", zap.Error(err), zap.Any("req", req))
 		return nil, common.DatabaseErr.WithError(err)
 	}
-	return &dto.GetUserInfoResp{
+	return &dto.UserInfoDto{
 		UserID: user.ID,
 		Name:   user.Name,
 	}, common.Ok
@@ -67,4 +67,22 @@ func (s *Service) UpdateUserStatus(ctx context.Context, adminUser *common.AdminU
 		return common.DatabaseErr.WithError(err)
 	}
 	return common.Ok
+}
+
+func (s *Service) GetAdminUserByToken(ctx context.Context, token string) (*common.AdminUser, common.Errno) {
+	user, err := s.verify.GetAdminUserFromToken(ctx, token)
+	if err != nil {
+		logger.Error("GetAdminUserByToken error", zap.Error(err), zap.Any("token", token))
+		return nil, common.RedisErr.WithError(err)
+	}
+	adminUser := &common.AdminUser{
+		UserId:     user.UserID,
+		Name:       user.Name,
+		NickName:   user.NickName,
+		Sex:        user.Sex,
+		Status:     user.Status,
+		Mobile:     user.Mobile,
+		LarkOpenID: user.LarkOpenID,
+	}
+	return adminUser, common.Ok
 }

@@ -26,3 +26,7 @@ redis:
   min_idle_conns: 10
   max_idle: 2
   max_open: 10
+jwt:
+  secret: secret
+  access_token_expiration: 2                    #2 hours
+  refresh_token_expiration: 15                  #15 days

@@ -3,13 +3,15 @@ package router
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"mall/common"
 	"mall/consts"
+	"mall/utils/logger"
 	"net/http"
 )
 
-type TokenFunc func(ctx context.Context, token string) (*common.User, error)
-type TokenAdminFunc func(ctx context.Context, token string) (*common.AdminUser, error)
+type TokenFunc func(ctx context.Context, adminUserId string) (*common.User, error)
+type TokenAdminFunc func(ctx context.Context, userId string) (*common.AdminUser, error)
 
 // AuthMiddleware 普通用户鉴权
 func AuthMiddleware(filter func(c *gin.Context) bool, getTokenFunc TokenFunc) gin.HandlerFunc {
@@ -45,15 +47,17 @@ func AdminAuthMiddleware(filter func(c *gin.Context) bool, getAdminTokenFunc Tok
 			ctx.Next()
 			return
 		}
-		token := ctx.GetHeader(consts.AdminTokenKey)
-		if len(token) == 0 {
+		// 管理员鉴权逻辑
+		adminUserId := ctx.GetHeader(consts.AdminTokenKey)
+		if len(adminUserId) == 0 {
+			logger.Error("AdminAuthMiddleware getAdminTokenFunc error", zap.String("msg", "token is empty"))
 			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
 		}
-		// 管理员鉴权逻辑
-		adminUser, err := getAdminTokenFunc(ctx, token)
+		adminUser, err := getAdminTokenFunc(ctx, adminUserId)
 		if err != nil {
+			logger.Error("AdminAuthMiddleware getAdminTokenFunc error", zap.Error(err), zap.Int64("userId", adminUser.UserId), zap.String("username", adminUser.Name))
 			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return

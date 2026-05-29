@@ -14,6 +14,7 @@ type Config struct {
 	HttpServer *Server `yaml:"server"`
 	Mysql      *Mysql  `yaml:"mysql"`
 	Redis      *Redis  `yaml:"redis"`
+	Jwt        *Jwt    `yaml:"jwt"`
 }
 type Server struct {
 	HttpPort        int    `yaml:"http_port"`
@@ -46,6 +47,12 @@ type Redis struct {
 	MinIdleConns int32         `yaml:"min_idle_conns"`
 	MaxIdle      int32         `yaml:"max_idle"`
 	MaxOpen      int32         `yaml:"max_open"`
+}
+
+type Jwt struct {
+	Secret                 string `yaml:"secret"`
+	AccessTokenExpiration  int64  `yaml:"access_token_expiration"`
+	RefreshTokenExpiration int64  `yaml:"refresh_token_expiration"`
 }
 
 const (

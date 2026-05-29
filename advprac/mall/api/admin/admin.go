@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"mall/adaptor"
 	"mall/api"
@@ -95,4 +96,12 @@ func (c *Controller) UpdateUserStatus(ctx *gin.Context) {
 
 	errno := c.adminSvc.UpdateUserStatus(ctx.Request.Context(), adminUser, req)
 	api.WriteResp(ctx, nil, errno)
+}
+
+func (c *Controller) GetUserAdminByToken(ctx context.Context, adminUserId string) (*common.AdminUser, error) {
+	adminUser, err := c.adminSvc.GetAdminUser(ctx, adminUserId)
+	if err != nil {
+		return nil, err
+	}
+	return adminUser, nil
 }
