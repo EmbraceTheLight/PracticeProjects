@@ -57,7 +57,7 @@ func AdminAuthMiddleware(filter func(c *gin.Context) bool, getAdminTokenFunc Tok
 		}
 		adminUser, err := getAdminTokenFunc(ctx, adminUserId)
 		if err != nil {
-			logger.Error("AdminAuthMiddleware getAdminTokenFunc error", zap.Error(err), zap.Int64("userId", adminUser.UserId), zap.String("username", adminUser.Name))
+			logger.Error("AdminAuthMiddleware getAdminTokenFunc error", zap.Error(err), zap.String("userId", adminUserId))
 			ctx.JSON(http.StatusUnauthorized, common.AuthErr)
 			ctx.Abort()
 			return
