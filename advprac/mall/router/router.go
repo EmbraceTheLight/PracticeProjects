@@ -84,8 +84,8 @@ func (r *Router) customerRoute(root *gin.RouterGroup) {
 }
 
 func (r *Router) adminRoute(root *gin.RouterGroup) {
-	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter, func(ctx context.Context, adminUserId string) (*common.AdminUser, error) {
-		adminUser, err := r.admin.GetUserAdminByToken(ctx, adminUserId)
+	adminRoot := root.Group("/admin", AdminAuthMiddleware(r.SpanFilter, func(ctx context.Context, accessToken string) (*common.AdminUser, error) {
+		adminUser, err := r.admin.GetUserAdminByAccessToken(ctx, accessToken)
 		return adminUser, err
 	}))
 	// 登录, 不应鉴权, 添加到白名单

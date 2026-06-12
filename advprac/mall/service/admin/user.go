@@ -68,21 +68,3 @@ func (s *Service) UpdateUserStatus(ctx context.Context, adminUser *common.AdminU
 	}
 	return common.Ok
 }
-
-func (s *Service) GetAdminUserByToken(ctx context.Context, token string) (*common.AdminUser, common.Errno) {
-	user, err := s.verify.GetAdminUserFromToken(ctx, token)
-	if err != nil {
-		logger.Error("GetAdminUserByToken error", zap.Error(err), zap.Any("token", token))
-		return nil, common.RedisErr.WithError(err)
-	}
-	adminUser := &common.AdminUser{
-		UserId:     user.UserID,
-		Name:       user.Name,
-		NickName:   user.NickName,
-		Sex:        user.Sex,
-		Status:     user.Status,
-		Mobile:     user.Mobile,
-		LarkOpenID: user.LarkOpenID,
-	}
-	return adminUser, common.Ok
-}

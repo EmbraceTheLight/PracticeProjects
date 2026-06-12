@@ -36,7 +36,7 @@ type GenerateTokenReq struct {
 	CreateAt   time.Time `json:"create_at"`
 }
 
-type GetAdminUserFromTokenResp struct {
+type AdminUserTokenClaims struct {
 	UserID     int64     `json:"user_id"`
 	Name       string    `json:"name"`
 	NickName   string    `json:"nick_name"`

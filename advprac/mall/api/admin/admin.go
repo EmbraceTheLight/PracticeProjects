@@ -98,8 +98,8 @@ func (c *Controller) UpdateUserStatus(ctx *gin.Context) {
 	api.WriteResp(ctx, nil, errno)
 }
 
-func (c *Controller) GetUserAdminByToken(ctx context.Context, adminUserId string) (*common.AdminUser, error) {
-	adminUser, err := c.adminSvc.GetAdminUser(ctx, adminUserId)
+func (c *Controller) GetUserAdminByAccessToken(ctx context.Context, accessToken string) (*common.AdminUser, error) {
+	adminUser, err := c.adminSvc.GetAdminUserByAccessToken(ctx, accessToken)
 	if err != nil {
 		return nil, err
 	}

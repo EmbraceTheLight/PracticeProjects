@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
-	"mall/consts"
+	auth "mall/utils/jwt"
 	"mall/utils/logger"
 	"time"
 )
@@ -52,7 +52,7 @@ func AccessLogMiddleware(filter func(c *gin.Context) bool) gin.HandlerFunc {
 			zap.String("path", c.Request.URL.Path),
 			zap.String("params", c.Request.URL.RawQuery),
 			zap.String("body", body),
-			zap.String("token", c.GetHeader(consts.UserTokenKey)),
+			zap.String("token", c.GetHeader(auth.AccessTokenHeader)),
 		}
 
 		var responseBuffer bytes.Buffer

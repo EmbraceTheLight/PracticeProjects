@@ -40,7 +40,9 @@ type MobilePasswordLoginReq struct {
 }
 
 type MobilePasswordLoginResp struct {
-	User *UserInfoDto `json:"user"`
+	User         *UserInfoDto `json:"user"`
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
 }
 
 func (r *GetVerifyCaptchaReq) CheckSign() bool {

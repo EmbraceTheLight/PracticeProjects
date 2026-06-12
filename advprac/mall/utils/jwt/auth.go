@@ -156,5 +156,8 @@ func (jwtAuthorizer *JWTAuth) GetToken(ctx context.Context, tokenString string) 
 	if err != nil {
 		return nil, err
 	}
+	if !tokenClaims.Valid {
+		return nil, errors.New("token is invalid")
+	}
 	return tokenClaims, nil
 }

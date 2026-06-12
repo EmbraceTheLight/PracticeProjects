@@ -3,14 +3,15 @@ package verify
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/redis/go-redis/v9"
+
 	"mall/adaptor"
 	"mall/config"
 	"mall/consts"
 	"mall/service/do"
 	auth "mall/utils/jwt"
-	"strconv"
-	"time"
 )
 
 type IVerify interface {
@@ -19,16 +20,11 @@ type IVerify interface {
 	SetCaptchaTicket(ctx context.Context, key string, value string, expire time.Duration) error
 	GetCaptchaTicket(ctx context.Context, key string) (string, error)
 
-	// GenerateToken 根据管理员用户信息生成 access token 与 refresh token
 	GenerateToken(ctx context.Context, adminUser *do.GenerateTokenReq) (string, string, error)
+	GetToken(ctx context.Context, userID int64, tokenType string) (string, error)
+	GetAdminUserFromAccessToken(ctx context.Context, accessToken string) (*do.AdminUserTokenClaims, error)
 
-	// GetToken 从 redis 中获取 token. 根据 tokenType 决定获取 refresh-token 还是 access-token
-	GetToken(ctx context.Context, adminUserId string, tokenType string) (string, error)
-
-	// GetAdminUserFromToken 从 token 解析出管理员用户信息
-	GetAdminUserFromToken(ctx context.Context, adminUserId string) (*do.GetAdminUserFromTokenResp, error)
-
-	SaveToken(ctx context.Context, userId int64, token string, tokenType string, expire time.Duration) error
+	SaveToken(ctx context.Context, userID int64, token string, tokenType string, expire time.Duration) error
 	IncreasePassWordErrCount(ctx context.Context, mobile string, expire time.Duration) (int64, error)
 	DeletePassWordErrCount(ctx context.Context, mobile string) error
 }
@@ -38,9 +34,15 @@ type verify struct {
 	jwtAuth *auth.JWTAuth
 }
 
+func NewVerify(adaptor adaptor.IAdaptor) IVerify {
+	return &verify{
+		redis:   adaptor.GetRedis(),
+		jwtAuth: adaptor.GetJwtAuth(),
+	}
+}
+
 func (v *verify) SetCaptchaKey(ctx context.Context, key string, value string, expire time.Duration) error {
-	redisKey := fmtVerifyCaptchaKey(key)
-	return v.redis.Set(ctx, redisKey, value, expire).Err()
+	return v.redis.Set(ctx, fmtVerifyCaptchaKey(key), value, expire).Err()
 }
 
 func (v *verify) GetCaptchaKey(ctx context.Context, key string) (string, error) {
@@ -49,15 +51,12 @@ func (v *verify) GetCaptchaKey(ctx context.Context, key string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-
-	// 每个 captcha 只允许用一次, 从 redis 中获取完成后, 就要将其删掉
 	v.redis.Del(ctx, redisKey)
 	return captcha, nil
 }
 
 func (v *verify) SetCaptchaTicket(ctx context.Context, key string, value string, expire time.Duration) error {
-	redisKey := fmtVerifyCaptchaTicketKey(key)
-	return v.redis.Set(ctx, redisKey, value, expire).Err()
+	return v.redis.Set(ctx, fmtVerifyCaptchaTicketKey(key), value, expire).Err()
 }
 
 func (v *verify) GetCaptchaTicket(ctx context.Context, key string) (string, error) {
@@ -66,21 +65,30 @@ func (v *verify) GetCaptchaTicket(ctx context.Context, key string) (string, erro
 	if err != nil {
 		return "", err
 	}
-
-	// 每个 captcha ticket 只允许用一次, 和 captcha 一样
 	v.redis.Del(ctx, redisKey)
 	return ticket, nil
 }
 
-func (v *verify) GetAdminUserFromToken(ctx context.Context, adminUserId string) (*do.GetAdminUserFromTokenResp, error) {
-	accessToken, err := v.GetToken(ctx, adminUserId, consts.AccessTokenKey)
+func (v *verify) GenerateToken(ctx context.Context, adminUser *do.GenerateTokenReq) (string, string, error) {
+	return v.jwtAuth.GenerateToken(ctx, adminUser)
+}
+
+func (v *verify) GetAdminUserFromAccessToken(ctx context.Context, accessToken string) (*do.AdminUserTokenClaims, error) {
+	adminUser, err := v.parseAdminUserFromAccessToken(ctx, accessToken)
 	if err != nil {
 		return nil, err
 	}
-	return v.getAdminUserFromToken(ctx, accessToken)
+	storedToken, err := v.GetToken(ctx, adminUser.UserID, consts.AccessTokenKey)
+	if err != nil {
+		return nil, err
+	}
+	if storedToken != accessToken {
+		return nil, fmt.Errorf("access token is not active")
+	}
+	return adminUser, nil
 }
 
-func (v *verify) getAdminUserFromToken(ctx context.Context, token string) (*do.GetAdminUserFromTokenResp, error) {
+func (v *verify) parseAdminUserFromAccessToken(ctx context.Context, token string) (*do.AdminUserTokenClaims, error) {
 	tokenClaim, err := v.jwtAuth.GetToken(ctx, token)
 	if err != nil {
 		return nil, err
@@ -89,7 +97,7 @@ func (v *verify) getAdminUserFromToken(ctx context.Context, token string) (*do.G
 	if !ok {
 		return nil, fmt.Errorf("token claim type error")
 	}
-	return &do.GetAdminUserFromTokenResp{
+	return &do.AdminUserTokenClaims{
 		UserID:     adminUser.UserId,
 		Name:       adminUser.Name,
 		NickName:   adminUser.NickName,
@@ -100,8 +108,8 @@ func (v *verify) getAdminUserFromToken(ctx context.Context, token string) (*do.G
 		UpdateAt:   adminUser.UpdateAt,
 		CreateAt:   adminUser.CreateAt,
 	}, nil
-
 }
+
 func (v *verify) IncreasePassWordErrCount(ctx context.Context, mobile string, expire time.Duration) (int64, error) {
 	redisKey := fmtVerifyPasswordErrCount(mobile)
 	pipeLine := v.redis.Pipeline()
@@ -116,51 +124,36 @@ func (v *verify) IncreasePassWordErrCount(ctx context.Context, mobile string, ex
 	return incr, err
 }
 
-func (v *verify) GenerateToken(ctx context.Context, adminUser *do.GenerateTokenReq) (string, string, error) {
-	return v.jwtAuth.GenerateToken(ctx, adminUser)
-}
 func (v *verify) DeletePassWordErrCount(ctx context.Context, mobile string) error {
-	redisKey := fmtVerifyPasswordErrCount(mobile)
-	return v.redis.Del(ctx, redisKey).Err()
+	return v.redis.Del(ctx, fmtVerifyPasswordErrCount(mobile)).Err()
 }
 
-func (v *verify) SaveToken(ctx context.Context, userId int64, token string, tokenType string, expire time.Duration) error {
+func (v *verify) SaveToken(ctx context.Context, userID int64, token string, tokenType string, expire time.Duration) error {
 	switch tokenType {
 	case consts.AccessTokenKey:
-		redisKey := fmtUserAccessToken(userId)
-		return v.redis.Set(ctx, redisKey, token, expire).Err()
+		return v.redis.Set(ctx, fmtUserAccessToken(userID), token, expire).Err()
 	case consts.RefreshTokenKey:
-		redisKey := fmtUserRefreshToken(userId)
-		return v.redis.Set(ctx, redisKey, token, expire).Err()
+		return v.redis.Set(ctx, fmtUserRefreshToken(userID), token, expire).Err()
 	default:
 		return fmt.Errorf("token type error")
 	}
 }
 
-func (v *verify) GetToken(ctx context.Context, adminUserId string, tokenType string) (string, error) {
-	id, _ := strconv.ParseInt(adminUserId, 10, 64)
+func (v *verify) GetToken(ctx context.Context, userID int64, tokenType string) (string, error) {
 	switch tokenType {
 	case consts.AccessTokenKey:
-		redisKey := fmtUserAccessToken(id)
-		return v.redis.Get(ctx, redisKey).Result()
+		return v.redis.Get(ctx, fmtUserAccessToken(userID)).Result()
 	case consts.RefreshTokenKey:
-		redisKey := fmtUserRefreshToken(id)
-		return v.redis.Get(ctx, redisKey).Result()
+		return v.redis.Get(ctx, fmtUserRefreshToken(userID)).Result()
 	default:
 		return "", fmt.Errorf("token type error")
-	}
-}
-
-func NewVerify(adaptor adaptor.IAdaptor) IVerify {
-	return &verify{
-		redis:   adaptor.GetRedis(),
-		jwtAuth: adaptor.GetJwtAuth(),
 	}
 }
 
 func fmtVerifyCaptchaKey(key string) string {
 	return fmt.Sprintf("%s:captcha:%s", config.ServerFullName, key)
 }
+
 func fmtVerifyCaptchaTicketKey(key string) string {
 	return fmt.Sprintf("%s:captcha:ticket:%s", config.ServerFullName, key)
 }
@@ -168,6 +161,7 @@ func fmtVerifyCaptchaTicketKey(key string) string {
 func fmtUserAccessToken(key int64) string {
 	return fmt.Sprintf("%s:access:token:%d", config.ServerFullName, key)
 }
+
 func fmtUserRefreshToken(key int64) string {
 	return fmt.Sprintf("%s:refresh:token:%d", config.ServerFullName, key)
 }

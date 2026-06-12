@@ -3,7 +3,6 @@ package consts
 import "time"
 
 const (
-	AdminTokenKey      = "user_id"
 	UserTokenKey       = "token"
 	CustomerUserKey    = "user_key"
 	AdminUserKey       = "admin_user_key"
