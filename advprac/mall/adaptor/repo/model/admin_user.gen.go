@@ -22,7 +22,7 @@ type AdminUser struct {
 	CreateAt   time.Time `gorm:"column:create_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"create_at"`
 	UpdateAt   time.Time `gorm:"column:update_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"update_at"`
 	CreateBy   int64     `gorm:"column:create_by;type:bigint;not null" json:"create_by"`
-	UpdateBy   int64     `gorm:"column:update_by;type:bigint;not null;default:1" json:"update_by"`
+	UpdateBy   int64     `gorm:"column:update_by;type:bigint;not null" json:"update_by"`
 	Sex        int64     `gorm:"column:sex;type:tinyint;not null;default:3;comment:性别   3: 其他  1: 男  2: 女" json:"sex"` // 性别   3: 其他  1: 男  2: 女
 	IsDelete   int64     `gorm:"column:is_delete;type:tinyint;not null" json:"is_delete"`
 }

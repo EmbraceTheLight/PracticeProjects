@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gogf/gf/util/gconv"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
+	"mall/utils/logger"
 	"os"
 	"time"
 )
@@ -64,7 +67,7 @@ var (
 	etcdKey         = fmt.Sprintf("/config/%s/systerm", ServerFullName)
 	etcdAddr        string
 	localConfigPath string
-	GlobalConfig    Config
+	GlobalConfig    *Config
 )
 
 func init() {
@@ -73,25 +76,31 @@ func init() {
 }
 
 func InitConfig() *Config {
-	var (
-		err      error
-		tempConf = &Config{}
-		vipConf  = viper.New()
-	)
-	flag.Parse()
+	GlobalConfig = parseConfigFromNacos()
+	return GlobalConfig
+}
 
-	if etcdAddr != "" {
-		tempConf, err = getFromRemoteAndWatchUpdate(vipConf)
-		if err != nil {
-			panic(err)
-		}
-		return tempConf
+func parseConfigFromNacos() *Config {
+	if err := InitNacosClient(); err != nil {
+		logger.Error("init nacos client error", zap.Error(err))
+		return nil
 	}
-	tempConf, err = getFromLocal()
+	data, err := NacosConfigClient.GetConfig(vo.ConfigParam{
+		DataId: DataID,
+		Group:  NacosGroup,
+	})
 	if err != nil {
-		panic(err)
+		logger.Error("get nacos config error", zap.Error(err))
+		return nil
 	}
-	return tempConf
+
+	var mallConfig *Config
+	if err = yaml.Unmarshal([]byte(data), &mallConfig); err != nil {
+		logger.Error("unmarshal nacos config error", zap.Error(err))
+		return nil
+	}
+	logger.Info("nacos config loaded", zap.String("data", data))
+	return mallConfig
 }
 
 func getFromRemoteAndWatchUpdate(v *viper.Viper) (*Config, error) {

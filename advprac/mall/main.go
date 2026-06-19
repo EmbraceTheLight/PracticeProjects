@@ -6,6 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	adaptor "mall/adaptor"
+	"mall/concurrent"
 	"mall/config"
 	"mall/router"
 	auth "mall/utils/jwt"
@@ -30,6 +31,7 @@ func main() {
 
 	logger.Debug("Redis init success")
 
+	concurrent.Go()
 	startServer(conf, dbClient, rdbClient, jwtAuth).Run()
 }
 
