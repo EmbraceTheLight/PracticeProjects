@@ -77,7 +77,7 @@ func (s *Service) CheckSlideCaptcha(ctx context.Context, req *dto.CheckCaptchaRe
 		logger.Error("CheckSlideCaptcha Unmarshal error", zap.Error(err))
 		return nil, common.InvalidCaptchaErr.WithError(err)
 	}
-	ok := slide.Validate(req.SlideX, req.SlideY, dot.DX, dot.DY, 5)
+	ok := slide.Validate(req.SlideX, req.SlideY, dot.X, dot.Y, 5)
 	if !ok {
 		return nil, common.InvalidCaptchaErr
 	}
